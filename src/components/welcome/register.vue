@@ -72,7 +72,8 @@ const rules = reactive<FormRules<RegisterForm>>({
     {type: 'email', message: '请输入正确的电子邮箱地址', trigger: ['blur', 'change']}
   ],
   verificationCode: [
-    {required: true, message: '请输入验证码', trigger: 'blur'}
+    {required: true, message: '请输入验证码', trigger: 'blur'},
+    {min: 6, max: 6, message: '验证码长度错误', trigger: ['blur', 'change']}
   ]
 })
 
@@ -89,17 +90,37 @@ const handleRegister = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate(async valid => {
     if (valid) {
+      const { data } = await post('/api/auth/register', {
+        username: form.username,
+        password: form.password,
+        email: form.email,
+        validateCode: form.verificationCode
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      ElMessage.success(data)
       await router.replace('/')
     }
   })
 }
 
+const coolTime = ref<number>(0)
 // 获取验证码按钮单击后操作
 const handleValidateEmail = async () => {
   const { data } = await post("/api/auth/valid-email", {
     email: form.email
   })
   ElMessage.success(data)
+  coolTime.value = 60
+  const intervalId = setInterval(() => {
+    if(coolTime.value > 0) {
+      coolTime.value--
+    } else {
+      clearInterval(intervalId)
+    }
+  }, 1000)
 }
 </script>
 
@@ -129,7 +150,9 @@ const handleValidateEmail = async () => {
         <el-form-item prop="verificationCode">
           <el-input class="h-10" v-model="form.verificationCode" placeholder="请输入邮件中的验证码">
             <template #append>
-              <el-button :disabled="!isEmailValid" @click="handleValidateEmail">获取验证码</el-button>
+              <el-button :disabled="!isEmailValid || coolTime > 0" @click="handleValidateEmail">
+                {{ coolTime > 0 ? coolTime + 's' : '获取验证码' }}
+              </el-button>
             </template>
           </el-input>
         </el-form-item>
