@@ -12,11 +12,11 @@
 
     <!-- 右侧表单 开始 -->
     <div class="w-[400px] bg-white flex flex-col justify-center items-center">
-      <router-view v-slot="{ Component }">
-        <transition name="el-fade-in-linear">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <transition name="el-fade-in-linear">
+        <router-view v-slot="{ Component }">
+          <component :is="Component"/>
+        </router-view>
+      </transition>
     </div>
     <!-- 右侧表单 结束 -->
   </div>
