@@ -109,7 +109,7 @@ const handleRegister = (formEl: FormInstance | undefined) => {
 const coolTime = ref<number>(0)
 // 获取验证码按钮单击后操作
 const handleValidateEmail = async () => {
-  const { data } = await post("/api/auth/valid-email", {
+  const { data } = await post("/api/auth/valid-register-email", {
     email: form.email
   })
   ElMessage.success(data)

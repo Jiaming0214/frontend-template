@@ -70,7 +70,7 @@ const handleLogin = (formEl: FormInstance | undefined) => {
         <el-form-item>
           <div class="w-full flex justify-between">
             <el-checkbox v-model="form.isRemember" label="记住我"/>
-            <el-button link>忘记密码？</el-button>
+            <el-button link @click="router.replace('/forget')">忘记密码？</el-button>
           </div>
         </el-form-item>
       </el-form>

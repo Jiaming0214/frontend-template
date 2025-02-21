@@ -18,6 +18,11 @@ const router: Router = createRouter({
                     path: 'register',
                     name: 'welcome-register',
                     component: () => import("@/components/welcome/register.vue")
+                },
+                {
+                    path: 'forget',
+                    name: 'welcome-forget',
+                    component: () => import("@/components/welcome/forget.vue")
                 }
             ]
         },
