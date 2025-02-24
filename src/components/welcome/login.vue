@@ -3,7 +3,8 @@ import {reactive, ref, toRaw} from 'vue'
 import {User, Lock} from "@element-plus/icons-vue";
 import {ElMessage, type FormInstance, type FormRules} from "element-plus";
 import router from "@/router";
-import {post} from "@/axios/axios-config.ts";
+import {defaultConfig, post, get} from "@/axios/axios-config.ts";
+import {useAuthStore} from "@/stores/auth-store.ts";
 
 interface User {
   username: string,
@@ -18,6 +19,8 @@ const form = reactive<User>({
 })
 
 const ruleFormRef = ref<FormInstance>()
+
+const authStore = useAuthStore()
 
 // 用户名验证
 const validateUsername = (_rule: any, value: any, callback: any) => {
@@ -41,11 +44,16 @@ const rules = reactive<FormRules<User>>({
 // 登录按钮操作
 const handleLogin = (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate(async valid => {
+  formEl.validate( valid => {
     if (valid) {
-      const {data} = await post('/api/auth/login', toRaw(form))
-      ElMessage.success(data)
-      await router.replace('/index')
+      post('/api/auth/login', toRaw(form), defaultConfig,
+          async data => {
+            ElMessage.success(data)
+            get('/api/user/me', success => {
+              authStore.user = success
+              router.replace("/index")
+            })
+          })
     }
   })
 }

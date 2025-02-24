@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import httpRequest from "@/axios/axios-config.ts";
+import { get } from "@/axios/axios-config.ts";
 import {ElMessage} from "element-plus";
 import router from '@/router'
+import {useAuthStore} from "@/stores/auth-store.ts";
+
+const authStore = useAuthStore()
 
 const handleLogout = async () => {
-  const { data } = await httpRequest.get("/api/auth/logout")
-  ElMessage.success(data)
-  await router.replace("/");
+  get("/api/auth/logout",  async data => {
+    ElMessage.success(data)
+    authStore.user = null
+    await router.replace("/");
+  })
+
 };
 </script>
 

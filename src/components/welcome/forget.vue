@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {reactive, ref} from "vue";
 import {ElMessage, type FormInstance, type FormItemProp, type FormRules} from "element-plus";
-import {post} from "@/axios/axios-config.ts";
+import {defaultConfig, post} from "@/axios/axios-config.ts";
 import {Lock, Message} from "@element-plus/icons-vue";
 import router from "@/router";
 
@@ -43,36 +43,38 @@ const handleValid = (prop: FormItemProp, isValid: boolean) => {
 
 const coolTime = ref<number>(0)
 // 获取验证码按钮单击后操作
-const handleValidateEmail = async () => {
-  const {data} = await post("/api/auth/valid-reset-email", {
+const handleValidateEmail = () => {
+  post("/api/auth/valid-reset-email", {
     email: validEmailForm.email
+  }, defaultConfig, (data) => {
+    ElMessage.success(data)
+    coolTime.value = 60
+    const intervalId = setInterval(() => {
+      if (coolTime.value > 0) {
+        coolTime.value--
+      } else {
+        clearInterval(intervalId)
+      }
+    }, 1000)
   })
-  ElMessage.success(data)
-  coolTime.value = 60
-  const intervalId = setInterval(() => {
-    if (coolTime.value > 0) {
-      coolTime.value--
-    } else {
-      clearInterval(intervalId)
-    }
-  }, 1000)
 }
 
 // 重置按钮操作
 const handleValidEmail = (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate(async valid => {
+  formEl.validate(valid => {
     if (valid) {
-      const { data } = await post("/api/auth/start-reset", {
+      post("/api/auth/start-reset", {
         email: validEmailForm.email,
         validateCode: validEmailForm.verificationCode
       }, {
         headers: {
           'Content-Type': 'application/json'
         }
+      }, (data) => {
+        ElMessage.success(data)
+        active.value = 1
       })
-      ElMessage.success(data)
-      active.value = 1
     }
   })
 }
@@ -126,15 +128,16 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate(async valid => {
     if (valid) {
-      const { data } = await post("/api/auth/reset-password", {
+      post("/api/auth/reset-password", {
         password: changePasswordForm.password
       }, {
         headers: {
           'Content-Type': 'application/json'
         }
+      },  async(data) => {
+        ElMessage.success(data)
+        await router.replace('/')
       })
-      ElMessage.success(data)
-      await router.replace('/')
     }
   })
 }
@@ -144,8 +147,8 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
   <div class="w-4/5">
     <div class="w-full">
       <el-steps class="w-full" :active="active" finish-status="success">
-        <el-step title="Step 1" />
-        <el-step title="Step 2" />
+        <el-step title="Step 1"/>
+        <el-step title="Step 2"/>
       </el-steps>
     </div>
     <transition name="el-fade-in-linear">
@@ -190,13 +193,16 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
 
           <!-- 修改密码表单 开始 -->
           <div class="w-full">
-            <el-form ref="changePasswordFormRef" :model="changePasswordForm" class="max-w-[400px]" :rules="changePasswordFormRules">
+            <el-form ref="changePasswordFormRef" :model="changePasswordForm" class="max-w-[400px]"
+                     :rules="changePasswordFormRules">
               <el-form-item prop="password">
-                <el-input class="h-10" :prefix-icon="Lock" v-model="changePasswordForm.password" placeholder="请输入密码"
+                <el-input class="h-10" :prefix-icon="Lock" v-model="changePasswordForm.password"
+                          placeholder="请输入密码"
                           type="password"/>
               </el-form-item>
               <el-form-item prop="password2">
-                <el-input class="h-10" :prefix-icon="Lock" v-model="changePasswordForm.password2" placeholder="请再次输入密码"
+                <el-input class="h-10" :prefix-icon="Lock" v-model="changePasswordForm.password2"
+                          placeholder="请再次输入密码"
                           type="password"/>
               </el-form-item>
             </el-form>
@@ -205,7 +211,9 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
 
           <!-- 按钮区域 开始 -->
           <div class="w-full">
-            <el-button type="primary" class="w-full !h-10" @click="handleChangePassword(changePasswordFormRef)">确认修改</el-button>
+            <el-button type="primary" class="w-full !h-10" @click="handleChangePassword(changePasswordFormRef)">
+              确认修改
+            </el-button>
             <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/')">返回首页</el-button>
           </div>
           <!-- 按钮区域 结束 -->

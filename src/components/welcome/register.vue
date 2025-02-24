@@ -3,7 +3,7 @@ import {reactive, ref} from "vue";
 import {Lock, User, Message} from "@element-plus/icons-vue";
 import {type FormInstance, type FormRules, type FormItemProp, ElMessage} from "element-plus";
 import router from '@/router'
-import {post} from '@/axios/axios-config.ts'
+import {defaultConfig, post} from '@/axios/axios-config.ts'
 
 interface RegisterForm {
   username: string,
@@ -88,9 +88,9 @@ const handleValid = (prop: FormItemProp, isValid: boolean) => {
 // 注册按钮操作
 const handleRegister = (formEl: FormInstance | undefined) => {
   if (!formEl) return
-  formEl.validate(async valid => {
+  formEl.validate(valid => {
     if (valid) {
-      const { data } = await post('/api/auth/register', {
+      post('/api/auth/register', {
         username: form.username,
         password: form.password,
         email: form.email,
@@ -99,9 +99,10 @@ const handleRegister = (formEl: FormInstance | undefined) => {
         headers: {
           'Content-Type': 'application/json'
         }
+      }, async data => {
+        ElMessage.success(data)
+        await router.replace('/')
       })
-      ElMessage.success(data)
-      await router.replace('/')
     }
   })
 }
@@ -109,18 +110,19 @@ const handleRegister = (formEl: FormInstance | undefined) => {
 const coolTime = ref<number>(0)
 // 获取验证码按钮单击后操作
 const handleValidateEmail = async () => {
-  const { data } = await post("/api/auth/valid-register-email", {
+  post("/api/auth/valid-register-email", {
     email: form.email
+  }, defaultConfig, data => {
+    ElMessage.success(data)
+    coolTime.value = 60
+    const intervalId = setInterval(() => {
+      if (coolTime.value > 0) {
+        coolTime.value--
+      } else {
+        clearInterval(intervalId)
+      }
+    }, 1000)
   })
-  ElMessage.success(data)
-  coolTime.value = 60
-  const intervalId = setInterval(() => {
-    if(coolTime.value > 0) {
-      coolTime.value--
-    } else {
-      clearInterval(intervalId)
-    }
-  }, 1000)
 }
 </script>
 
