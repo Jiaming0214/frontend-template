@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from "pinia";
+import piniaPersist from 'pinia-plugin-persistedstate';
 
 import 'element-plus/dist/index.css'
 import './style.css'
@@ -8,6 +9,6 @@ import router from './router'
 
 
 createApp(App)
+    .use(createPinia().use(piniaPersist))
     .use(router)
-    .use(createPinia())
     .mount('#app')

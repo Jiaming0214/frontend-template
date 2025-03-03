@@ -6,10 +6,11 @@ import router from "@/router";
 
 const authStore = useAuthStore()
 
+console.log("app", authStore.user)
 if(authStore.user === null) {
   get("/api/user/me", data => {
     authStore.user = data
-    router.replace("/index")
+    router.replace("/")
   }, _failure => {
     authStore.user = null
   })

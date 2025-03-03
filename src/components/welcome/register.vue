@@ -101,7 +101,7 @@ const handleRegister = (formEl: FormInstance | undefined) => {
         }
       }, async data => {
         ElMessage.success(data)
-        await router.replace('/')
+        await router.replace('/welcome')
       })
     }
   })
@@ -165,7 +165,7 @@ const handleValidateEmail = async () => {
     <!-- 按钮区域 开始 -->
     <div class="w-full">
       <el-button type="primary" class="w-full !h-10" @click="handleRegister(ruleFormRef)">立即注册</el-button>
-      <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/')">已有账号，去登录</el-button>
+      <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/welcome')">已有账号，去登录</el-button>
     </div>
     <!-- 按钮区域 结束 -->
   </div>

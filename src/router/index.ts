@@ -1,5 +1,6 @@
-import {createRouter, createWebHistory} from "vue-router"
 import type {Router} from "vue-router"
+import {createRouter, createWebHistory} from "vue-router"
+import type {IStoreMenu} from "@/stores/auth-store.ts";
 import {useAuthStore} from "@/stores/auth-store.ts";
 
 const router: Router = createRouter({
@@ -7,6 +8,24 @@ const router: Router = createRouter({
     routes: [
         {
             path: "/",
+            name: "index",
+            component: () => import("@/views/index-view.vue"),
+            children: [
+                {
+                    path: 'person',
+                    name: 'person',
+                    children: [
+                        {
+                            path: "info",
+                            name: "person-info",
+                            component: () => import("@/views/person/info-view.vue")
+                        }
+                    ]
+                },
+            ]
+        },
+        {
+            path: "/welcome",
             name: "welcome",
             component: () => import("@/views/welcome-view.vue"),
             children: [
@@ -27,24 +46,77 @@ const router: Router = createRouter({
                 }
             ]
         },
-        {
-            path: "/index",
-            name: "index",
-            component: () => import("@/views/index-view.vue")
-        }
     ]
 })
 
+const Module = import.meta.glob("@/views/**/*")
+
+const compilerMenu = (parentName: string, arr: Array<IStoreMenu> | undefined) => {
+    if (arr === undefined || arr.length === 0) {
+        return;
+    }
+    console.log("parentName:", parentName)
+    arr.forEach(item => {
+        if (!router.hasRoute(item.name)) {
+            if (item.componentPath && item.componentPath !== '' && (item.componentPath !== undefined)) {
+                router.addRoute(parentName, {
+                    name: item.name,
+                    path: item.path,
+                    component: loadComponent(item.componentPath)
+                })
+            } else {
+                const redirect = item.children && item.children.length ? item.children[0].name : ''
+                router.addRoute(parentName, {
+                    name: item.name,
+                    path: item.path,
+                    component: () => import("@/views/default-view.vue"),
+                    redirect: redirect,
+                    children: []
+                })
+            }
+
+            if(item.children && item.children.length) {
+                compilerMenu(item.name, item.children)
+            }
+        }
+    })
+}
+
+const loadComponent = (componentPath: string) => {
+    return Module[`/src/views${componentPath}.vue`]
+}
+
 router.beforeEach((to, _from, next) => {
     const authStore = useAuthStore()
-    if (authStore.user !== null && to.fullPath.startsWith('welcome-')) {
-        next("/index")
-    } else if (authStore.user === null && to.fullPath.startsWith("/index")) {
-        next("/")
-    } else if (to.matched.length === 0) {
-        next("/index")
+
+    if (authStore.user !== null) { // 用户已登录
+        const menus = authStore.user?.menus
+
+        if (to.fullPath.startsWith('/welcome')) {
+            next("/");
+        } else {
+            compilerMenu("index", menus)
+            console.log("routers:", router.getRoutes())
+            next();
+        }
     } else {
-        next()
+        // 用户未登录
+        router.addRoute("index", {
+            path: "test",
+            name: "test",
+            redirect: "test01"
+        })
+        router.addRoute("test", {
+            path: "test01",
+            name: "test-1",
+            component: () => import("@/views/index-view.vue")
+        })
+        console.log("routers:", router.getRoutes())
+        if (to.fullPath.startsWith('/welcome')) {
+            next();
+        } else {
+            next("/welcome");
+        }
     }
 })
 

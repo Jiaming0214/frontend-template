@@ -51,7 +51,7 @@ const handleLogin = (formEl: FormInstance | undefined) => {
             ElMessage.success(data)
             get('/api/user/me', success => {
               authStore.user = success
-              router.replace("/index")
+              router.replace("/")
             })
           })
     }
@@ -78,7 +78,7 @@ const handleLogin = (formEl: FormInstance | undefined) => {
         <el-form-item>
           <div class="w-full flex justify-between">
             <el-checkbox v-model="form.isRemember" label="记住我"/>
-            <el-button link @click="router.replace('/forget')">忘记密码？</el-button>
+            <el-button link @click="router.replace('/welcome/forget')">忘记密码？</el-button>
           </div>
         </el-form-item>
       </el-form>
@@ -91,7 +91,7 @@ const handleLogin = (formEl: FormInstance | undefined) => {
       <el-divider>
         <div class="text-xs text-gray-400">还没账号？快速注册</div>
       </el-divider>
-      <el-button class="w-full !h-10" @click="router.replace('/register')">注册</el-button>
+      <el-button class="w-full !h-10" @click="router.replace('/welcome/register')">注册</el-button>
     </div>
     <!-- 按钮区域 结束 -->
   </div>

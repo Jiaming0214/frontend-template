@@ -136,7 +136,7 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
         }
       },  async(data) => {
         ElMessage.success(data)
-        await router.replace('/')
+        await router.replace('/welcome')
       })
     }
   })
@@ -182,7 +182,7 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
           <!-- 按钮区域 开始 -->
           <div class="w-full">
             <el-button type="primary" class="w-full !h-10" @click="handleValidEmail(validEmailFormRef)">重置</el-button>
-            <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/')">取消</el-button>
+            <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/welcome')">取消</el-button>
           </div>
           <!-- 按钮区域 结束 -->
         </div>
@@ -214,7 +214,7 @@ const handleChangePassword = (formEl: FormInstance | undefined) => {
             <el-button type="primary" class="w-full !h-10" @click="handleChangePassword(changePasswordFormRef)">
               确认修改
             </el-button>
-            <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/')">返回首页</el-button>
+            <el-button class="w-full !h-10 mt-2 !mx-0" @click="router.replace('/welcome')">返回首页</el-button>
           </div>
           <!-- 按钮区域 结束 -->
         </div>
