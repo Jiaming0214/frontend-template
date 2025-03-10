@@ -3,6 +3,8 @@ import {createRouter, createWebHistory} from "vue-router"
 import type {IStoreMenu} from "@/stores/auth-store.ts";
 import {useAuthStore} from "@/stores/auth-store.ts";
 
+console.log("router")
+
 const router: Router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -14,6 +16,7 @@ const router: Router = createRouter({
                 {
                     path: 'person',
                     name: 'person',
+                    redirect: '/person/info',
                     children: [
                         {
                             path: "info",
@@ -65,7 +68,7 @@ const compilerMenu = (parentName: string, arr: Array<IStoreMenu> | undefined) =>
                     component: loadComponent(item.componentPath)
                 })
             } else {
-                const redirect = item.children && item.children.length ? item.children[0].name : ''
+                const redirect = item.children && item.children.length ? '/' + item.path + '/' + item.children[0].path : ''
                 router.addRoute(parentName, {
                     name: item.name,
                     path: item.path,
@@ -86,36 +89,38 @@ const loadComponent = (componentPath: string) => {
     return Module[`/src/views${componentPath}.vue`]
 }
 
+// 动态路由刷新（加载）
+const refreshRouter = () => {
+    const authStore = useAuthStore()
+    const menus = authStore.user?.menus
+    compilerMenu("index", menus)
+}
+
+// 防止刷新页面时，路由丢失
+if(window.sessionStorage.getItem('auth')) {
+    const authInfo = JSON.parse(window.sessionStorage.getItem('auth') || '{}')
+    if(authInfo.user?.menus) {
+        compilerMenu("index", authInfo.user.menus)
+    }
+}
+
 router.beforeEach((to, _from, next) => {
     const authStore = useAuthStore()
 
     if (authStore.user !== null) { // 用户已登录
-        const menus = authStore.user?.menus
-
         if (to.fullPath.startsWith('/welcome')) {
             next("/");
         } else {
-            compilerMenu("index", menus)
+            refreshRouter()
             console.log("routers:", router.getRoutes())
-            next();
+            next()
         }
     } else {
         // 用户未登录
-        router.addRoute("index", {
-            path: "test",
-            name: "test",
-            redirect: "test01"
-        })
-        router.addRoute("test", {
-            path: "test01",
-            name: "test-1",
-            component: () => import("@/views/index-view.vue")
-        })
-        console.log("routers:", router.getRoutes())
         if (to.fullPath.startsWith('/welcome')) {
             next();
         } else {
-            next("/welcome");
+            next("/welcome")
         }
     }
 })
