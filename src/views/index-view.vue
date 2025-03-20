@@ -43,8 +43,10 @@ const handleMenuChange = (item:  MenuItemRegistered) => {
             <Aside :selected-menu="selectedMenu"/>
           </el-scrollbar>
         </el-aside>
-        <el-main>
-          <router-view />
+        <el-main class="h-full">
+          <el-scrollbar>
+            <router-view />
+          </el-scrollbar>
         </el-main>
       </el-container>
     </el-container>
