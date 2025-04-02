@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {reactive, ref} from "vue";
 import {deleteRequest, get, getWithParams, post, put} from "@/axios/axios-config.ts";
-import {ElMessage, type FormInstance, type FormRules} from "element-plus";
+import {ElMessage, ElMessageBox, type FormInstance, type FormRules} from "element-plus";
 
 interface IRole {
   id?: number | null,
@@ -142,9 +142,23 @@ const handleClose = () => {
 }
 
 const handleDelete = (id: number) => {
-  deleteRequest('/api/role/' + id, () => {
-    ElMessage.success("删除成功")
-    getRoleList()
+  ElMessageBox.confirm(
+      '确定删除该角色信息吗？',
+      '提示',
+      {
+        center: true,
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+  ).then(() => {
+    // 删除角色信息
+    deleteRequest('/api/role/' + id, () => {
+      ElMessage.success("删除成功")
+      getRoleList()
+    })
+  }).catch(() => {
+   ElMessage.info('已取消删除')
   })
 }
 
@@ -165,7 +179,7 @@ const handleDelete = (id: number) => {
             <el-input v-model="roleQueryVO.zhName" placeholder="请输入中文名称"/>
           </el-form-item>
         </el-col>
-        <el-col span="8">
+        <el-col :span="8">
           <el-button type="primary" @click="getRoleList" class="mr-2">搜索</el-button>
           <el-button class="mr-2" @click="handleQueryReset">重置</el-button>
         </el-col>
@@ -188,6 +202,9 @@ const handleDelete = (id: number) => {
       <el-table-column prop="zhName" label="中文名称" align="center"/>
       <el-table-column fixed="right" label="操作" min-width="120" align="center">
         <template #default="scope">
+          <el-button link type="primary" size="small" @click="showRoleDialog(scope.row.id, 'view')">
+            查看
+          </el-button>
           <el-button link type="primary" size="small" @click="showRoleDialog(scope.row.id, 'edit')">
             编辑
           </el-button>
@@ -233,7 +250,7 @@ const handleDelete = (id: number) => {
       </el-form>
       <template #footer>
         <div>
-          <el-button @click="handleSave(roleFormRef)">保存</el-button>
+          <el-button @click="handleSave(roleFormRef)" v-show="opt !== 'view'">保存</el-button>
           <el-button type="primary" @click="handleClose">
             取消
           </el-button>

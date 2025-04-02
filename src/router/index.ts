@@ -90,7 +90,7 @@ const loadComponent = (componentPath: string) => {
 }
 
 // 动态路由刷新（加载）
-const refreshRouter = () => {
+export const refreshRouter = () => {
     const authStore = useAuthStore()
     const menus = authStore.user?.menus
     compilerMenu("index", menus)
